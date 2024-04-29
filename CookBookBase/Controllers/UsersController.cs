@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using CookBookBase;
 using CookBookBase.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.CodeAnalysis.Scripting;
+using System.Security.Policy;
+
+
 
 namespace CookBookBase.Controllers
 {
@@ -16,6 +20,7 @@ namespace CookBookBase.Controllers
     public class UsersController : ControllerBase
     {
         private readonly CookBookDbContext _context;
+        PasswordHasher passwordHasher = new PasswordHasher();
 
         public UsersController(CookBookDbContext context)
         {
@@ -41,7 +46,6 @@ namespace CookBookBase.Controllers
             {
                 return NotFound();
             }
-
             return user;
         }
 
@@ -82,6 +86,13 @@ namespace CookBookBase.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+            user.Hashpassword = passwordHasher.HashPassword(user.Hashpassword);
+            var resultLoginCheck = _context.Users
+                  .Where(e => e.Nick == user.Nick).FirstOrDefault();
+            if (resultLoginCheck != null)
+            {
+                return BadRequest("Invalid Credentials");
+            }
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
