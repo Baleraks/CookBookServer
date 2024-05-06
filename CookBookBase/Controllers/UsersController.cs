@@ -36,25 +36,34 @@ namespace CookBookBase.Controllers
         }
 
         // GET: api/Users/5
-        [Authorize]
-        [HttpGet("{id}")]
-        [Route("api/GetUser")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        //[Authorize]
+        [HttpGet("api/GetUser/{id}")]
+        //[Route("api/GetUser")]
+        public async Task<ActionResult<RedactedUser>> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
-
             if (user == null)
             {
                 return NotFound();
             }
-            return user;
+            var NewUser = new RedactedUser()
+            {
+                Id = user.Id,
+                Nick = user.Nick,
+                Comments= user.Comments,
+                Likes = user.Likes,
+                Recipes = user.Recipes,
+                Reports = user.Reports
+
+            };
+            return NewUser ;
         }
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
-        [HttpPut("{id}")]
-        [Route("api/ChangeUser")]
+        [HttpPut("api/ChangeUser/{id}")]
+        //[Route("api/ChangeUser")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
             if (id != user.Id)
@@ -103,8 +112,8 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        [Route("api/DeleteUsers")]
+        [HttpDelete("api/DeleteUser/{id}")]
+        //[Route("api/DeleteUser")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
