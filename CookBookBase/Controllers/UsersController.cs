@@ -15,7 +15,6 @@ using System.Security.Policy;
 
 namespace CookBookBase.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -30,6 +29,7 @@ namespace CookBookBase.Controllers
         // GET: api/Users
         [Authorize]
         [HttpGet]
+        [Route("api/GetUsers")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
@@ -38,6 +38,7 @@ namespace CookBookBase.Controllers
         // GET: api/Users/5
         [Authorize]
         [HttpGet("{id}")]
+        [Route("api/GetUser")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -53,6 +54,7 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPut("{id}")]
+        [Route("api/ChangeUser")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
             if (id != user.Id)
@@ -84,6 +86,7 @@ namespace CookBookBase.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Route("api/Register")]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             user.Hashpassword = passwordHasher.HashPassword(user.Hashpassword);
@@ -101,6 +104,7 @@ namespace CookBookBase.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
+        [Route("api/DeleteUsers")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);

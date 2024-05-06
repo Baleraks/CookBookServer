@@ -3,6 +3,8 @@ using CookBookBase.Controllers;
 using CookBookBase.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Execution;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -36,6 +38,10 @@ namespace AuthenticationAndAuthorization.Controllers
                 var resultLoginCheck = _context.Users   
                     .Where(e => e.Nick == _userData.Nick)
                     .FirstOrDefault();
+                if (resultLoginCheck == null)
+                {
+                    return BadRequest("User not found");
+                }
                var result = passwordHasher.VerifyPassword(resultLoginCheck.Hashpassword, _userData.Hashpassword);
                 if (!result)
                 {
@@ -63,7 +69,7 @@ namespace AuthenticationAndAuthorization.Controllers
                     var ActiveToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
 
-                    var response = new TokenResponse() { jwttoken = ActiveToken, refreshtoken = GenerateRefreshToken(_userData.Nick)};
+                    var response = new TokenResponse() { jwttoken = ActiveToken, refreshtoken = GenerateRefreshToken(_userData.Nick), Id = resultLoginCheck.Id};
 
                     return Ok(response);
                    
@@ -75,7 +81,8 @@ namespace AuthenticationAndAuthorization.Controllers
             }
         }
 
-        private string GenerateRefreshToken(string userName)
+        [NonAction]
+        public string GenerateRefreshToken(string userName)
         {
             var claims = new List<Claim>
                     {
@@ -100,9 +107,9 @@ namespace AuthenticationAndAuthorization.Controllers
         }
 
         [HttpPost("RefToken")]
-        public async Task<IActionResult> RefToken([FromBody] TokenResponse tokenResponse)
+        public IActionResult RefToken([FromBody] TokenResponse tokenResponse)
         {
-
+            RefreshToken(tokenResponse);
 
             return Ok();
         }
@@ -117,6 +124,65 @@ namespace AuthenticationAndAuthorization.Controllers
             return new DecodedToken(
             keyId, token.Issuer, audience, claims, token.ValidTo, token.SignatureAlgorithm,token.RawData,token.Subject,token.ValidFrom,token.EncodedHeader,token.EncodedPayload)
             ;
+        }
+
+        [NonAction]
+        public string GenerateToken(string userName)
+        {
+            var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.Email, userName),
+                    };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Key").Value));
+
+            var signingCred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512Signature);
+
+            var securityToken = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),
+                issuer: _configuration.GetSection("Jwt:Issuer").Value,
+                audience: _configuration.GetSection("Jwt:Audience").Value,
+                signingCredentials: signingCred);
+
+            var ActiveToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
+
+            return ActiveToken;
+
+        }
+
+
+        [NonAction]
+        public ClaimsPrincipal GetPrincipal(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken validatedToken;
+            var principal = tokenHandler.ValidateToken(token,
+                new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
+                    ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Key").Value))
+                }, out validatedToken);
+
+            var jwtToken = validatedToken as JwtSecurityToken;
+            if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+            {
+                throw new SecurityTokenException("Invalid token passed!");
+            }
+            return principal;
+        }
+
+        [NonAction]
+        public void RefreshToken(TokenResponse response)
+        {
+            var principal = GetPrincipal(response.jwttoken);
+            var a = principal.Claims.First().Value;
+            var b = a.ToString();
+
+           
         }
 
     }
