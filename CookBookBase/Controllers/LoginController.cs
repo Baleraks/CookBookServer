@@ -30,7 +30,7 @@ namespace AuthenticationAndAuthorization.Controllers
 
 
         [HttpPost]
-        [Route("Login")]
+        [Route("api/Login")]
         public IActionResult PostLoginDetails(User _userData)
         {
             if (_userData != null)
@@ -106,12 +106,16 @@ namespace AuthenticationAndAuthorization.Controllers
 
         }
 
-        [HttpPost("RefToken")]
+        [HttpPost("api/RefreshToken")]
         public IActionResult RefToken([FromBody] TokenResponse tokenResponse)
         {
-            RefreshToken(tokenResponse);
+           var UserName = RefreshToken(tokenResponse);
+            var AccessToken = GenerateToken(UserName);
+            var RefToken = GenerateRefreshToken(UserName);
 
-            return Ok();
+            var response = new TokenResponse() { jwttoken = AccessToken, refreshtoken = RefToken};
+
+            return Ok(response);
         }
 
         private static DecodedToken DecodeJwt(JwtSecurityToken token)
@@ -176,13 +180,40 @@ namespace AuthenticationAndAuthorization.Controllers
         }
 
         [NonAction]
-        public void RefreshToken(TokenResponse response)
+        public ClaimsPrincipal GetRefreshPrincipal(string token)
         {
-            var principal = GetPrincipal(response.jwttoken);
-            var a = principal.Claims.First().Value;
-            var b = a.ToString();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken validatedToken;
+            var principal = tokenHandler.ValidateToken(token,
+                new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
+                    ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JwtR:Key").Value))
+                }, out validatedToken);
 
-           
+            var jwtToken = validatedToken as JwtSecurityToken;
+            if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+            {
+                throw new SecurityTokenException("Invalid token passed!");
+            }
+            return principal;
+        }
+
+        [NonAction]
+        public string RefreshToken(TokenResponse response)
+        {
+            var AccessPrincipal = GetPrincipal(response.jwttoken);
+            var RefreshPrincipal = GetRefreshPrincipal(response.refreshtoken);
+            var RefreshUserName = RefreshPrincipal.Claims.First().Value;
+            var AccessUserName = AccessPrincipal.Claims.First().Value;
+            if(RefreshUserName != AccessUserName)
+            {
+                throw new Exception("Tokens are not valid");
+            }
+            else return RefreshUserName;
         }
 
     }
