@@ -108,10 +108,14 @@ namespace AuthenticationAndAuthorization.Controllers
 
         [HttpPost("api/RefreshToken")]
         public IActionResult RefToken([FromBody] TokenResponse tokenResponse)
-        {
+        { 
            var UserName = RefreshToken(tokenResponse);
-            var AccessToken = GenerateToken(UserName);
-            var RefToken = GenerateRefreshToken(UserName);
+            if (!UserName.isSuccess)
+            {
+                return BadRequest(UserName.exeption);
+            }
+            var AccessToken = GenerateToken(UserName.value);
+            var RefToken = GenerateRefreshToken(UserName.value);
 
             var response = new TokenResponse() { jwttoken = AccessToken, refreshtoken = RefToken};
 
@@ -157,63 +161,102 @@ namespace AuthenticationAndAuthorization.Controllers
 
 
         [NonAction]
-        public ClaimsPrincipal GetPrincipal(string token)
+        public ValidValue<ClaimsPrincipal> GetPrincipal(string token)
         {
+            var result = new ValidValue<ClaimsPrincipal>();
             var tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken validatedToken;
-            var principal = tokenHandler.ValidateToken(token,
-                new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
-                    ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Key").Value))
-                }, out validatedToken);
-
-            var jwtToken = validatedToken as JwtSecurityToken;
-            if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+            try
             {
-                throw new SecurityTokenException("Invalid token passed!");
+                var principal = tokenHandler.ValidateToken(token,
+                    new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
+                        ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Key").Value))
+                    }, out validatedToken);
+                var jwtToken = validatedToken as JwtSecurityToken;
+                if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+                {
+                    result.exeption = "Invalid token passed!";
+                    result.isSuccess = false;
+                }
+                result.value = principal;
+                result.isSuccess = true;
             }
-            return principal;
+            catch (Exception ex) 
+            {
+                result.exeption = ex.Message;
+                result.isSuccess = false;
+            }
+            return result;
         }
 
         [NonAction]
-        public ClaimsPrincipal GetRefreshPrincipal(string token)
+        public ValidValue<ClaimsPrincipal> GetRefreshPrincipal(string token)
         {
+            var result = new ValidValue<ClaimsPrincipal>();
             var tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken validatedToken;
-            var principal = tokenHandler.ValidateToken(token,
-                new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
-                    ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JwtR:Key").Value))
-                }, out validatedToken);
-
-            var jwtToken = validatedToken as JwtSecurityToken;
-            if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+            try
             {
-                throw new SecurityTokenException("Invalid token passed!");
+                var principal = tokenHandler.ValidateToken(token,
+                    new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidAudience = _configuration.GetSection("Jwt:Audience").Value,
+                        ValidIssuer = _configuration.GetSection("Jwt:Issuer").Value,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JwtR:Key").Value))
+                    }, out validatedToken);
+                var jwtToken = validatedToken as JwtSecurityToken;
+                if (jwtToken == null || !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature))
+                {
+                    result.exeption = "Invalid token passed!";
+                    result.isSuccess = false;
+                }
+                result.value = principal;
+                result.isSuccess = true;
             }
-            return principal;
+            catch (Exception ex)
+            {
+                result.exeption = ex.Message;
+                result.isSuccess = false;
+            }
+            return result;
         }
 
         [NonAction]
-        public string RefreshToken(TokenResponse response)
+        public ValidValue<string> RefreshToken(TokenResponse response)
         {
+            var result = new ValidValue<string>();
             var AccessPrincipal = GetPrincipal(response.jwttoken);
             var RefreshPrincipal = GetRefreshPrincipal(response.refreshtoken);
-            var RefreshUserName = RefreshPrincipal.Claims.First().Value;
-            var AccessUserName = AccessPrincipal.Claims.First().Value;
-            if(RefreshUserName != AccessUserName)
+            if( AccessPrincipal.isSuccess) 
             {
-                throw new Exception("Tokens are not valid");
+                var RefreshUserName = RefreshPrincipal.value.Claims.First().Value;
+                var AccessUserName = AccessPrincipal.value.Claims.First().Value;
+                if (RefreshUserName != AccessUserName)
+                {
+                    result.exeption = "Tokens are not valid";
+                    result.isSuccess = false;
+                }
+                else
+                {
+                    result.value = AccessUserName;
+                    result.isSuccess = true;
+                }
+               
             }
-            else return RefreshUserName;
+            else
+            {
+                result.exeption = "Tokens are not valid";
+                result.isSuccess = false;
+            }
+         
+             return result;
         }
 
     }

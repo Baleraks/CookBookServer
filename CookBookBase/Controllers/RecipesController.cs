@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CookBookBase;
 using CookBookBase.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IO;
 
 namespace CookBookBase.Controllers
 {
@@ -16,16 +17,20 @@ namespace CookBookBase.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly CookBookDbContext _context;
+        IConfiguration _configuration;
 
-        public RecipesController(CookBookDbContext context)
+        public RecipesController(CookBookDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/Recipes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes()
         {
+            
+            
             return await _context.Recipes.ToListAsync();
         }
 
@@ -79,11 +84,142 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Recipe>> PostRecipe(Recipe recipe)
+        public async Task<ActionResult<Recipe>> PostRecipe(RedactedRecipe RedactedRecipe)
         {
+            for(int i = 0;i<RedactedRecipe.Qauntities.Count(); i++)
+            {
+                var qauntity = new Qauntity()
+                {
+                    Type = RedactedRecipe.Qauntities[i]
+                };
+                var resultCheck = _context.Qauntitys
+                  .Where(e => e.Type == qauntity.Type).FirstOrDefault();
+                if (resultCheck == null)
+                {
+                    _context.Qauntitys.Add(qauntity);
+                }
+            }
+
+            for(int i = 0;i<RedactedRecipe.Ingridients.Count();i++)
+            {
+                var ingridient = new Ingridient()
+                {
+                    Ingridienname = RedactedRecipe.Ingridients[i],
+                    Ingridientcalories = RedactedRecipe.IngridientCalories[i]
+                };
+                var resultCheck = _context.Ingridients
+                  .Where(e => e.Ingridienname == ingridient.Ingridienname).FirstOrDefault();
+                if (resultCheck == null)
+                {
+                    _context.Ingridients.Add(ingridient);
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            for (int i = 0;i<RedactedRecipe.Ingridients.Count();i++)
+            {
+                var qauntity = _context.Qauntitys
+                  .Where(e => e.Type == RedactedRecipe.Qauntities[i]).FirstOrDefault();
+                var ingridient = _context.Ingridients
+                  .Where(e => e.Ingridienname == RedactedRecipe.Ingridients[i]).FirstOrDefault();
+
+                var QauntityToIngridient = new Ingridienttoqauntity()
+                {
+                    IngId = ingridient.Id,
+                    QauId = qauntity.Id
+                };
+                _context.Ingridienttoqauntities.Add(QauntityToIngridient);
+            }
+
+            for (int i = 0; i < RedactedRecipe.Tags.Count(); i++)
+            {
+                var tag = new Tag()
+                {
+                    Tagname = RedactedRecipe.Tags[i]
+                };
+                var resultCheck = _context.Tags
+                  .Where(e => e.Tagname == tag.Tagname).FirstOrDefault();
+                if (resultCheck == null)
+                {
+                    _context.Tags.Add(tag);
+                }
+            }
+            var FileName = "\\images\\" + Guid.NewGuid().ToString() + ".jpg";
+            System.IO.File.WriteAllBytes("wwwroot\\" + FileName, RedactedRecipe.MainImage);
+            var recipe = new Recipe() 
+            {
+                Cokingtime = 0,
+                Likes = 0,
+                Recipecalories = RedactedRecipe.Recipecalories,
+                Recipeimagepath = FileName,
+                Recipename = RedactedRecipe.Recipename,
+                Reportsnum = 0,
+                UseId = RedactedRecipe.UserId
+            };
             _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
+            var recipeId = _context.Recipes.Where(e => e.Recipeimagepath == FileName).FirstOrDefault().Id;
+
+            for(int i = 0; i< RedactedRecipe.StepText.Count();  i++)
+            {
+                FileName = "\\images\\" + Guid.NewGuid().ToString() + ".jpg";
+                System.IO.File.WriteAllBytes("wwwroot\\" + FileName, RedactedRecipe.StepImages[i]);
+                var step = new Step()
+                {
+                    RecId = recipeId,
+                    Stepimagepath = FileName,
+                    Steptext = RedactedRecipe.StepText[i],
+                    Steptime = 0
+                };
+                _context.Recipes.Add(recipe);
+            }
+
+            for (int i = 0; i < RedactedRecipe.Tags.Count(); i++)
+            {
+                var tag = _context.Tags
+                  .Where(e => e.Tagname == RedactedRecipe.Tags[i]).FirstOrDefault();
+                var RecipeToTag = new Recipetotag()
+                {
+                    RecId = recipeId,
+                    TagId = tag.Id
+                };
+                _context.Recipetotags.Add(RecipeToTag);
+            }
+
+            for (int i = 0; i < RedactedRecipe.Ingridients.Count(); i++)
+            {
+                var ingridient = _context.Ingridients
+                  .Where(e => e.Ingridienname == RedactedRecipe.Ingridients[i]).FirstOrDefault();
+                var RecipeToIngridient = new Recipetoingridient()
+                {
+                    RecId = recipeId,
+                    IngId = ingridient.Id
+                };
+                _context.Recipetoingridients.Add(RecipeToIngridient);
+            }
+
+            for (int i = 0; i < RedactedRecipe.Ingridients.Count(); i++)
+            {
+                var qauntity = _context.Qauntitys
+                 .Where(e => e.Type == RedactedRecipe.Qauntities[i]).FirstOrDefault();
+                var ingridient = _context.Ingridients
+                  .Where(e => e.Ingridienname == RedactedRecipe.Ingridients[i]).FirstOrDefault();
+
+                var IngToQId = _context.Ingridienttoqauntities
+                  .Where(e => e.IngId == ingridient.Id && e.QauId == qauntity.Id).FirstOrDefault().Id;
+
+                var RecToIngId = _context.Recipetoingridients
+                    .Where(e => e.IngId == ingridient.Id && e.RecId == recipeId).FirstOrDefault().Id;
+
+                var RecipeToQauntities = new Recipetoqauntity()
+                {
+                   ItoqId = IngToQId,
+                   RtoiId = RecToIngId
+                };
+                _context.Recipetoqauntities.Add(RecipeToQauntities);
+            }
+            await _context.SaveChangesAsync();
             return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe);
         }
 
