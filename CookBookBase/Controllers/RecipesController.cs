@@ -47,6 +47,7 @@ namespace CookBookBase.Controllers
             var IngridientToRecipe = _context.Recipetoingridients.Where(e => e.RecId == id).ToList();
             var RecipeToQauntities = new List<Recipetoqauntity>();
             var IngridientsToQauntities = new List<Ingridienttoqauntity>();
+            var RecipeToTag = _context.Recipetotags.Where(e => e.RecId == id).ToList();
             for (int i = 0; i< IngridientToRecipe.Count(); i++)
             {
                 RecipeToQauntities.AddRange(_context.Recipetoqauntities.Where(e => e.RtoiId == IngridientToRecipe[i].Id).ToList());
@@ -58,7 +59,20 @@ namespace CookBookBase.Controllers
             }
             var Ingridients = new List<Ingridient>();
             var Qauntities = new List<Qauntity>();
+            var Tags = new List<Tag>();
+            var Steps = _context.Steps.Where(e => e.RecId == id).ToList();
 
+            for(int i = 0; i< Steps.Count();i++)
+            {
+                Steps[i].Rec = null;
+            }
+
+            for(int i = 0; i< RecipeToTag.Count(); i++)
+            {
+                Tags.Add(_context.Tags.Find(RecipeToTag[i].TagId));
+                RecipeToTag[i].Rec = null;
+                Tags[i].Recipetotags = null;
+            }
             for(int i = 0; i< IngridientToRecipe.Count();i++)
             {
                 Ingridients.Add(_context.Ingridients.Find(IngridientToRecipe[i].IngId));
@@ -69,8 +83,6 @@ namespace CookBookBase.Controllers
                 IngridientsToQauntities[i].Recipetoqauntities = null;
                 IngridientToRecipe[i].Recipetoqauntities = null;
                 Qauntities[i].Ingridienttoqauntities = null;
-
-
             }
             //recipe.Recipetoingridients = IngridientToRecipe;
 
