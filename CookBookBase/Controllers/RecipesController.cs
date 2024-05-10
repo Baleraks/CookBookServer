@@ -135,6 +135,7 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
+        [Route("api/AddRecipe")]
         public async Task<ActionResult<Recipe>> PostRecipe(RedactedRecipe RedactedRecipe)
         {
             for(int i = 0;i<RedactedRecipe.Qauntities.Count(); i++)
