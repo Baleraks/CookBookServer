@@ -49,8 +49,10 @@ namespace CookBookBase.Controllers
             for(int i = 0; i< IngridientToRecipe.Count();i++)
             {
                 Ingridients.Add(_context.Ingridients.Find(IngridientToRecipe[i].IngId));
+                IngridientToRecipe[i].Rec = null;
+                Ingridients[i].Recipetoingridients = null;
             }
-            recipe.Recipetoingridients = IngridientToRecipe;
+            //recipe.Recipetoingridients = IngridientToRecipe;
 
             return recipe;
         }
