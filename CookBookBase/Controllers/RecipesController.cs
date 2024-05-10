@@ -45,12 +45,32 @@ namespace CookBookBase.Controllers
             }
         
             var IngridientToRecipe = _context.Recipetoingridients.Where(e => e.RecId == id).ToList();
+            var RecipeToQauntities = new List<Recipetoqauntity>();
+            var IngridientsToQauntities = new List<Ingridienttoqauntity>();
+            for (int i = 0; i< IngridientToRecipe.Count(); i++)
+            {
+                RecipeToQauntities.AddRange(_context.Recipetoqauntities.Where(e => e.RtoiId == IngridientToRecipe[i].Id).ToList());
+            }
+            for(int i = 0; i < RecipeToQauntities.Count();i++)
+            {
+                IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.Id == RecipeToQauntities[i].ItoqId).ToList());
+            
+            }
             var Ingridients = new List<Ingridient>();
+            var Qauntities = new List<Qauntity>();
+
             for(int i = 0; i< IngridientToRecipe.Count();i++)
             {
                 Ingridients.Add(_context.Ingridients.Find(IngridientToRecipe[i].IngId));
+                Qauntities.Add(_context.Qauntitys.Find(IngridientsToQauntities[i].QauId));
                 IngridientToRecipe[i].Rec = null;
                 Ingridients[i].Recipetoingridients = null;
+                IngridientsToQauntities[i].Ing = null;
+                IngridientsToQauntities[i].Recipetoqauntities = null;
+                IngridientToRecipe[i].Recipetoqauntities = null;
+                Qauntities[i].Ingridienttoqauntities = null;
+
+
             }
             //recipe.Recipetoingridients = IngridientToRecipe;
 
