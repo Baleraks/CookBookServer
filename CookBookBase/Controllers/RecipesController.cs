@@ -45,7 +45,7 @@ namespace CookBookBase.Controllers
         }
 
         // GET: api/Recipes/5
-        [HttpGet("\"api/GetRecipe/{id}")]
+        [HttpGet("api/GetRecipe/{id}")]
         public async Task<ActionResult<Recipe>> GetRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
