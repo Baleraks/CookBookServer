@@ -27,11 +27,11 @@ namespace CookBookBase.Controllers
 
         // GET: api/Recipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes()
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes(int offset, int count)
         {
-            
-            
-            return await _context.Recipes.ToListAsync();
+            var recipes = await _context.Recipes.ToListAsync();
+            var RedactedRecipes = recipes.Skip(offset).Take(count);
+            return Ok(RedactedRecipes);
         }
 
         // GET: api/Recipes/5
