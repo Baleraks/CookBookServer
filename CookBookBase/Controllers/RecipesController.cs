@@ -39,11 +39,18 @@ namespace CookBookBase.Controllers
         public async Task<ActionResult<Recipe>> GetRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
-
             if (recipe == null)
             {
                 return NotFound();
             }
+        
+            var IngridientToRecipe = _context.Recipetoingridients.Where(e => e.RecId == id).ToList();
+            var Ingridients = new List<Ingridient>();
+            for(int i = 0; i< IngridientToRecipe.Count();i++)
+            {
+                Ingridients.Add(_context.Ingridients.Find(IngridientToRecipe[i].IngId));
+            }
+            recipe.Recipetoingridients = IngridientToRecipe;
 
             return recipe;
         }
@@ -172,7 +179,7 @@ namespace CookBookBase.Controllers
                     Steptext = RedactedRecipe.StepText[i],
                     Steptime = 0
                 };
-                _context.Recipes.Add(recipe);
+                _context.Steps.Add(step);
             }
 
             for (int i = 0; i < RedactedRecipe.Tags.Count(); i++)
@@ -198,6 +205,7 @@ namespace CookBookBase.Controllers
                 };
                 _context.Recipetoingridients.Add(RecipeToIngridient);
             }
+            await _context.SaveChangesAsync();
 
             for (int i = 0; i < RedactedRecipe.Ingridients.Count(); i++)
             {
