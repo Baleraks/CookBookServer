@@ -12,7 +12,7 @@ using System.IO;
 
 namespace CookBookBase.Controllers
 {
-    [Route("api/[controller]")]
+  
     [ApiController]
     public class RecipesController : ControllerBase
     {
@@ -27,6 +27,7 @@ namespace CookBookBase.Controllers
 
         // GET: api/Recipes
         [HttpGet]
+        [Route("api/GetRecipes")]
         public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
         {
             var recipes = await _context.Recipes.ToListAsync();
@@ -44,7 +45,7 @@ namespace CookBookBase.Controllers
         }
 
         // GET: api/Recipes/5
-        [HttpGet("{id}")]
+        [HttpGet("\"api/GetRecipe/{id}")]
         public async Task<ActionResult<Recipe>> GetRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
@@ -101,7 +102,7 @@ namespace CookBookBase.Controllers
         // PUT: api/Recipes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
-        [HttpPut("{id}")]
+        [HttpPut("api/ChangeRecipe/{id}")]
         public async Task<IActionResult> PutRecipe(int id, Recipe recipe)
         {
             if (id != recipe.Id)
@@ -276,7 +277,7 @@ namespace CookBookBase.Controllers
 
         // DELETE: api/Recipes/5
         [Authorize]
-        [HttpDelete("{id}")]
+        [HttpDelete("api/DeleteRecipe/{id}")]
         public async Task<IActionResult> DeleteRecipe(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
