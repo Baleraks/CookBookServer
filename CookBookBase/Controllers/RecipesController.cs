@@ -30,6 +30,15 @@ namespace CookBookBase.Controllers
         public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes(int offset, int count)
         {
             var recipes = await _context.Recipes.ToListAsync();
+            if (offset >= recipes.Count())
+            {
+                return BadRequest("Offset is out of range");
+            }
+            var RemainingCount = recipes.Count() - offset;  
+            if(count > RemainingCount)
+            {
+                count = RemainingCount;
+            }
             var RedactedRecipes = recipes.Skip(offset).Take(count);
             return Ok(RedactedRecipes);
         }
