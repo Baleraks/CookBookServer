@@ -27,7 +27,7 @@ namespace CookBookBase.Controllers
 
         // GET: api/Recipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes(int offset, int count)
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody]int offset, [FromBody] int count)
         {
             var recipes = await _context.Recipes.ToListAsync();
             if (offset >= recipes.Count())
