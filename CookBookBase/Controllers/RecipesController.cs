@@ -27,19 +27,19 @@ namespace CookBookBase.Controllers
 
         // GET: api/Recipes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody]int offset, [FromBody] int count)
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
         {
             var recipes = await _context.Recipes.ToListAsync();
-            if (offset >= recipes.Count())
+            if (query.Offset >= recipes.Count())
             {
                 return BadRequest("Offset is out of range");
             }
-            var RemainingCount = recipes.Count() - offset;  
-            if(count > RemainingCount)
+            var RemainingCount = recipes.Count() - query.Offset;
+            if (query.Count > RemainingCount)
             {
-                count = RemainingCount;
+                query.Count = RemainingCount;
             }
-            var RedactedRecipes = recipes.Skip(offset).Take(count);
+            var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
             return Ok(RedactedRecipes);
         }
 
