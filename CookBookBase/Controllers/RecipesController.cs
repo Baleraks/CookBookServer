@@ -26,7 +26,7 @@ namespace CookBookBase.Controllers
         }
 
         // GET: api/Recipes
-        [HttpGet]
+        [HttpPost]
         [Route("api/GetRecipes")]
         public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
         {
@@ -71,8 +71,14 @@ namespace CookBookBase.Controllers
             var Qauntities = new List<Qauntity>();
             var Tags = new List<Tag>();
             var Steps = _context.Steps.Where(e => e.RecId == id).ToList();
+            var Likes = _context.Likes.Where(e => e.RecId == id).ToList();
 
-            for(int i = 0; i< Steps.Count();i++)
+            for (int i = 0; i < Likes.Count(); i++)
+            {
+                Likes[i].Rec = null;
+            }
+
+            for (int i = 0; i< Steps.Count();i++)
             {
                 Steps[i].Rec = null;
             }
