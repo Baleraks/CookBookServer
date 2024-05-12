@@ -34,10 +34,18 @@ namespace CookBookBase.Controllers
         public async Task<ActionResult<Comment>> GetComment(int id)
         {
             var comment = await _context.Comments.FindAsync(id);
-
             if (comment == null)
             {
                 return NotFound();
+            }
+
+            var User = _context.Users.Where(e => e.Id == comment.UseId).ToList();
+            var Recipe = _context.Recipes.Where(e => e.Id == comment.RecId).ToList();
+
+            for (int i = 0; i < User.Count(); i++)
+            {
+                User[i].Comments = null;
+                Recipe[i].Comments = null;
             }
 
             return comment;
@@ -78,8 +86,16 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Comment>> PostComment(Comment comment)
+        public async Task<ActionResult<Comment>> PostComment(RedactedComment RedactedComment)
         {
+
+            var comment = new Comment()
+            {
+                 Commenttext = RedactedComment.Commenttext,
+                 Firstcommentid = RedactedComment.Firstcommentid,
+                 RecId = RedactedComment.RecId,
+                 UseId = RedactedComment.UseId
+            };
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
 

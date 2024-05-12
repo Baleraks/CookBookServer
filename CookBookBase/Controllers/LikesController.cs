@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CookBookBase.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class LikesController : ControllerBase
     {
@@ -24,28 +23,38 @@ namespace CookBookBase.Controllers
 
         // GET: api/Likes
         [HttpGet]
+        [Route("api/GetLikes")]
         public async Task<ActionResult<IEnumerable<Like>>> GetLikes()
         {
             return await _context.Likes.ToListAsync();
         }
 
         // GET: api/Likes/5
-        [HttpGet("{id}")]
+        [HttpGet("api/GetLike/{id}")]
         public async Task<ActionResult<Like>> GetLike(int id)
         {
             var like = await _context.Likes.FindAsync(id);
-
             if (like == null)
             {
                 return NotFound();
             }
+
+            var User = _context.Users.Where(e => e.Id == like.UseId).ToList();
+            var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).ToList();
+
+            for( int i = 0; i< User.Count(); i++)
+            {
+                User[i].Likes = null;
+                Recipe[i].LikesNavigation = null;
+            }
+           
 
             return like;
         }
 
         // PUT: api/Likes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("api/EditLike/{id}")]
         public async Task<IActionResult> PutLike(int id, Like like)
         {
             if (id != like.Id)
@@ -78,8 +87,14 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Like>> PostLike(Like like)
+        [Route("api/AddLike")]
+        public async Task<ActionResult<Like>> PostLike(RedactedLikes RedactedLike)
         {
+            var like = new Like()
+            {
+                RecId = RedactedLike.RecId,
+                UseId = RedactedLike.UseId
+            };
             _context.Likes.Add(like);
             await _context.SaveChangesAsync();
 
@@ -87,7 +102,7 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Likes/5
-        [HttpDelete("{id}")]
+        [HttpDelete("api/DeleteLike/{id}")]
         public async Task<IActionResult> DeleteLike(int id)
         {
             var like = await _context.Likes.FindAsync(id);
