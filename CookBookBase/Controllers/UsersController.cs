@@ -53,6 +53,11 @@ namespace CookBookBase.Controllers
             for (int i = 0; i < Likes.Count(); i++)
             {
                 Likes[i].Use = null;
+                var likeRecipes = _context.Recipes.Where(e => e.Id == Likes[i].RecId).ToList();
+                for (int j = 0; j < likeRecipes.Count(); j++)
+                {
+                    likeRecipes[j].LikesNavigation = null;
+                }
             }
 
             for (int i = 0; i < Recipes.Count; i++)
