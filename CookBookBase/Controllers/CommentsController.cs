@@ -90,7 +90,6 @@ namespace CookBookBase.Controllers
         [Route("api/AddComment")]
         public async Task<ActionResult<Comment>> PostComment(RedactedComment RedactedComment)
         {
-
             var comment = new Comment()
             {
                  Commenttext = RedactedComment.Commenttext,
@@ -98,6 +97,10 @@ namespace CookBookBase.Controllers
                  RecId = RedactedComment.RecId,
                  UseId = RedactedComment.UseId
             };
+            if(RedactedComment.Id == comment.Firstcommentid)
+            {
+                comment.Firstcomment = null;
+            }
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
 
