@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CookBookBase.Controllers
 {
-    [Route("api/[controller]")]
+   
     [ApiController]
     public class CommentsController : ControllerBase
     {
@@ -24,13 +24,14 @@ namespace CookBookBase.Controllers
 
         // GET: api/Comments
         [HttpGet]
+        [Route("api/GetComments")]
         public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
         {
             return await _context.Comments.ToListAsync();
         }
 
         // GET: api/Comments/5
-        [HttpGet("{id}")]
+        [HttpGet("api/GetComment/{id}")]
         public async Task<ActionResult<Comment>> GetComment(int id)
         {
             var comment = await _context.Comments.FindAsync(id);
@@ -53,7 +54,7 @@ namespace CookBookBase.Controllers
 
         // PUT: api/Comments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("api/EditComment/{id}")]
         public async Task<IActionResult> PutComment(int id, Comment comment)
         {
             if (id != comment.Id)
@@ -86,6 +87,7 @@ namespace CookBookBase.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
         [HttpPost]
+        [Route("api/AddComment")]
         public async Task<ActionResult<Comment>> PostComment(RedactedComment RedactedComment)
         {
 
@@ -103,7 +105,7 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Comments/5
-        [HttpDelete("{id}")]
+        [HttpDelete("api/DeleteComment/{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
             var comment = await _context.Comments.FindAsync(id);
