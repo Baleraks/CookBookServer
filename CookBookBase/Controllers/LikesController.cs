@@ -96,14 +96,12 @@ namespace CookBookBase.Controllers
                 UseId = RedactedLike.UseId
             };
             _context.Likes.Add(like);
-            var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).ToList();
-            for(int i =  0; i < Recipe.Count;i++)
-            {
-                Recipe[i].Likes ++;
-            }
+            var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault(); 
+            Recipe.Likes ++;
+            _context.Entry(Recipe).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLike", new { id = like.Id }, like);
+            return Ok();
         }
 
         // DELETE: api/Likes/5
