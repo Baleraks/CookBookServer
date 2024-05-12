@@ -48,10 +48,16 @@ namespace CookBookBase.Controllers
             }
 
             var Likes = _context.Likes.Where(e => e.UseId == user.Id).ToList();
+            var Recipes = _context.Recipes.Where(e => e.UseId == user.Id).ToList();
 
-            for(int i = 0; i< Likes.Count(); i++)
+            for (int i = 0; i < Likes.Count(); i++)
             {
                 Likes[i].Use = null;
+            }
+
+            for (int i = 0; i < Recipes.Count; i++)
+            {
+                Recipes[i].Use = null;
             }
 
             var NewUser = new RedactedUser()
@@ -60,7 +66,7 @@ namespace CookBookBase.Controllers
                 Nick = user.Nick,
                 Comments= user.Comments,
                 Likes = Likes,
-                Recipes = user.Recipes,
+                Recipes = Recipes,
                 Reports = user.Reports
 
             };
