@@ -92,24 +92,31 @@ namespace CookBookBase.Controllers
         {
             var UserLikes = _context.Likes.Where(e => e.UseId == RedactedLike.UseId && e.RecId == RedactedLike.RecId).FirstOrDefault();
             var LikedRecipe = _context.Recipes.Where(e => e.UseId == RedactedLike.UseId).FirstOrDefault();
-            if (UserLikes != null && LikedRecipe != null)
+            var like = new Like()
             {
-                return Ok();
+                RecId = RedactedLike.RecId,
+                UseId = RedactedLike.UseId
+            };
+            var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault();
+            if ( LikedRecipe != null)
+            {
+                return NoContent();
+            }
+            else if(UserLikes != null)
+            {
+                _context.Likes.Remove(UserLikes);
+                Recipe.Likes--;
+                _context.Entry(Recipe).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
             else
             {
-                var like = new Like()
-                {
-                    RecId = RedactedLike.RecId,
-                    UseId = RedactedLike.UseId
-                };
                 _context.Likes.Add(like);
-                var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault();
                 Recipe.Likes++;
                 _context.Entry(Recipe).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-
-                return Ok();
+                return NoContent();
             }
         }
 
