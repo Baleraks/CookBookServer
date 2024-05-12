@@ -90,18 +90,27 @@ namespace CookBookBase.Controllers
         [Route("api/AddLike")]
         public async Task<ActionResult<Like>> PostLike(RedactedLikes RedactedLike)
         {
-            var like = new Like()
+            var UserLikes = _context.Likes.Where(e => e.UseId == RedactedLike.UseId && e.RecId == RedactedLike.RecId).FirstOrDefault();
+            var LikedRecipe = _context.Recipes.Where(e => e.UseId == RedactedLike.UseId).FirstOrDefault();
+            if (UserLikes != null && LikedRecipe != null)
             {
-                RecId = RedactedLike.RecId,
-                UseId = RedactedLike.UseId
-            };
-            _context.Likes.Add(like);
-            var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault(); 
-            Recipe.Likes ++;
-            _context.Entry(Recipe).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+                return Ok();
+            }
+            else
+            {
+                var like = new Like()
+                {
+                    RecId = RedactedLike.RecId,
+                    UseId = RedactedLike.UseId
+                };
+                _context.Likes.Add(like);
+                var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault();
+                Recipe.Likes++;
+                _context.Entry(Recipe).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
 
-            return Ok();
+                return Ok();
+            }
         }
 
         // DELETE: api/Likes/5
