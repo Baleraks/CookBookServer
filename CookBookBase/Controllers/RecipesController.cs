@@ -303,10 +303,6 @@ namespace CookBookBase.Controllers
             var RecipeToIngridients = _context.Recipetoingridients.Where(e => e.RecId == id).ToList();
             var RecipeToQauntities = new List<Recipetoqauntity>();
             var IngridientsToQauntities = new List<Ingridienttoqauntity>();
-            for (int i = 0; i < RecipeToIngridients.Count; i++)
-            {
-                _context.Recipetoingridients.Remove(RecipeToIngridients[i]);
-            }
 
             for (int i = 0; i < RecipeToIngridients.Count(); i++)
             {
@@ -316,21 +312,19 @@ namespace CookBookBase.Controllers
             {
                 _context.Recipetoqauntities.Remove(RecipeToQauntities[i]);
             }
+            await _context.SaveChangesAsync();
 
-            for (int i = 0; i < RecipeToQauntities.Count; i++)
-            {
-                IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
-            }
-            for (int i = 0; i < IngridientsToQauntities.Count; i++)
-            {
-                _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
-            }
 
+            for (int i = 0; i < RecipeToIngridients.Count; i++)
+            {
+                _context.Recipetoingridients.Remove(RecipeToIngridients[i]);
+            }
             var RecipeToTag = _context.Recipetotags.Where(e => e.RecId == id).ToList();
             for (int i = 0; i < RecipeToTag.Count; i++)
             {
                 _context.Recipetotags.Remove(RecipeToTag[i]);
             }
+            await _context.SaveChangesAsync();
 
             var Qauntities = new List<Qauntity>();
             for (int i = 0; i < IngridientsToQauntities.Count; i++)
@@ -341,6 +335,16 @@ namespace CookBookBase.Controllers
             {
                 _context.Qauntitys.Remove(Qauntities[i]);
             }
+
+            for (int i = 0; i < RecipeToQauntities.Count; i++)
+            {
+                IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
+            }
+            for (int i = 0; i < IngridientsToQauntities.Count; i++)
+            {
+                _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
+            }
+            await _context.SaveChangesAsync();
 
             var Steps = _context.Steps.Where(e => e.RecId == id).ToList();
             for(int i = 0; i < Steps.Count;i++)
