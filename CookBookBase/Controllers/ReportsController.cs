@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CookBookBase;
 using CookBookBase.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CookBookBase.Controllers
 {
-    [Route("api/[controller]")]
+   
     [ApiController]
     public class ReportsController : ControllerBase
     {
@@ -23,28 +24,36 @@ namespace CookBookBase.Controllers
 
         // GET: api/Reports
         [HttpGet]
+        [Route("api/GetReports")]
         public async Task<ActionResult<IEnumerable<Report>>> GetReports()
         {
             return await _context.Reports.ToListAsync();
         }
 
         // GET: api/Reports/5
-        [HttpGet("{id}")]
+        [HttpGet("api/GetReport/{id}")]
         public async Task<ActionResult<Report>> GetReport(int id)
         {
             var report = await _context.Reports.FindAsync(id);
-
             if (report == null)
             {
                 return NotFound();
             }
 
+            var User = _context.Users.Where(e => e.Id == report.UseId).ToList();
+            var Recipe = _context.Recipes.Where(e => e.Id == report.RecId).ToList();
+
+            for (int i = 0; i < User.Count(); i++)
+            {
+                User[i].Reports = null;
+                Recipe[i].Reports = null;
+            }
             return report;
         }
 
         // PUT: api/Reports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("api/EditReport/{id}\"")]
         public async Task<IActionResult> PutReport(int id, Report report)
         {
             if (id != report.Id)
@@ -75,13 +84,39 @@ namespace CookBookBase.Controllers
 
         // POST: api/Reports
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Report>> PostReport(Report report)
+        [Route("api/AddReport")]
+        public async Task<ActionResult<Report>> PostLike(RedactedReport RedactedReport)
         {
-            _context.Reports.Add(report);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetReport", new { id = report.Id }, report);
+            var UserReports = _context.Reports.Where(e => e.UseId == RedactedReport.UseId && e.RecId == RedactedReport.RecId).FirstOrDefault();
+            var ReportedRecipe = _context.Recipes.Where(e => e.UseId == RedactedReport.UseId).FirstOrDefault();
+            var report = new Report()
+            {
+                RecId = RedactedReport.RecId,
+                UseId = RedactedReport.UseId
+            };
+            var Recipe = _context.Recipes.Where(e => e.Id == report.RecId).FirstOrDefault();
+            if (ReportedRecipe != null)
+            {
+                return NoContent();
+            }
+            else if (UserReports != null)
+            {
+                _context.Reports.Remove(UserReports);
+                Recipe.Reportsnum --;
+                _context.Entry(Recipe).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            else
+            {
+                _context.Reports.Add(report);
+                Recipe.Reportsnum++;
+                _context.Entry(Recipe).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
         }
 
         // DELETE: api/Reports/5

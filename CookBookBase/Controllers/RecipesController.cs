@@ -9,6 +9,7 @@ using CookBookBase;
 using CookBookBase.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.IO;
+using NuGet.Packaging;
 
 namespace CookBookBase.Controllers
 {
@@ -297,6 +298,72 @@ namespace CookBookBase.Controllers
             if (recipe == null)
             {
                 return NotFound();
+            }
+
+            var RecipeToIngridients = _context.Recipetoingridients.Where(e => e.RecId == id).ToList();
+            var RecipeToQauntities = new List<Recipetoqauntity>();
+            var IngridientsToQauntities = new List<Ingridienttoqauntity>();
+            for (int i = 0; i < RecipeToIngridients.Count; i++)
+            {
+                _context.Recipetoingridients.Remove(RecipeToIngridients[i]);
+            }
+
+            for (int i = 0; i < RecipeToIngridients.Count(); i++)
+            {
+                RecipeToQauntities.AddRange(_context.Recipetoqauntities.Where(e => e.RtoiId == RecipeToIngridients[i].Id).ToList());
+            }
+            for (int i = 0; i < RecipeToQauntities.Count; i++)
+            {
+                _context.Recipetoqauntities.Remove(RecipeToQauntities[i]);
+            }
+
+            for (int i = 0; i < RecipeToQauntities.Count; i++)
+            {
+                IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
+            }
+            for (int i = 0; i < IngridientsToQauntities.Count; i++)
+            {
+                _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
+            }
+
+            var RecipeToTag = _context.Recipetotags.Where(e => e.RecId == id).ToList();
+            for (int i = 0; i < RecipeToTag.Count; i++)
+            {
+                _context.Recipetotags.Remove(RecipeToTag[i]);
+            }
+
+            var Qauntities = new List<Qauntity>();
+            for (int i = 0; i < IngridientsToQauntities.Count; i++)
+            {
+                Qauntities.AddRange(_context.Qauntitys.Where(e => e.Id == IngridientsToQauntities[i].QauId).ToList());
+            }
+            for (int i = 0; i < Qauntities.Count; i++)
+            {
+                _context.Qauntitys.Remove(Qauntities[i]);
+            }
+
+            var Steps = _context.Steps.Where(e => e.RecId == id).ToList();
+            for(int i = 0; i < Steps.Count;i++)
+            {
+                _context.Steps.Remove(Steps[i]);
+            }
+
+            var Comments = _context.Comments.Where(e => e.RecId == id).ToList();
+            for (int i = 0; i < Comments.Count; i++)
+            {
+                _context.Comments.Remove(Comments[i]);
+            }
+
+            var Likes = _context.Likes.Where(e => e.RecId == id).ToList();
+            for (int i = 0; i < Likes.Count; i++)
+            {
+                _context.Likes.Remove(Likes[i]);
+            }
+
+            var Reports = _context.Reports.Where(e => e.RecId == id).ToList();
+            for (int i = 0; i < Reports.Count; i++)
+            {
+                _context.Reports.Remove(Reports[i]);
             }
 
             _context.Recipes.Remove(recipe);
