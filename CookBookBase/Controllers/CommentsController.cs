@@ -40,6 +40,11 @@ namespace CookBookBase.Controllers
                 return NotFound();
             }
 
+            if (comment.Id == comment.Firstcommentid)
+            {
+                comment.Firstcomment = null;
+            }
+
             var User = _context.Users.Where(e => e.Id == comment.UseId).ToList();
             var Recipe = _context.Recipes.Where(e => e.Id == comment.RecId).ToList();
 
@@ -92,19 +97,29 @@ namespace CookBookBase.Controllers
         {
             var comment = new Comment()
             {
-                 Commenttext = RedactedComment.Commenttext,
-                 Firstcommentid = RedactedComment.Firstcommentid,
-                 RecId = RedactedComment.RecId,
-                 UseId = RedactedComment.UseId
+                Commenttext = RedactedComment.Commenttext,
+                Firstcommentid = RedactedComment.Firstcommentid,
+                RecId = RedactedComment.RecId,
+                UseId = RedactedComment.UseId
             };
-            if(RedactedComment.Id == comment.Firstcommentid)
-            {
-                comment.Firstcomment = null;
-            }
             _context.Comments.Add(comment);
+
+            if (RedactedComment.Firstcommentid == null)
+            {
+                var RecipeComments = _context.Comments.Where(e => e.RecId == RedactedComment.RecId);
+                var lastComment = await RecipeComments.OrderByDescending(c => c.Id).FirstOrDefaultAsync();
+                if (lastComment != null)
+                {
+                    comment.Firstcommentid = lastComment.Id + 1;
+                }
+                else
+                {
+                    comment.Firstcommentid = comment.Id;
+                }
+            }
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+            return Ok();
         }
 
         // DELETE: api/Comments/5
