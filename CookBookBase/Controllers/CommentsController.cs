@@ -52,16 +52,11 @@ namespace CookBookBase.Controllers
                 }
 
                 User = _context.Users.Where(e => e.Id == comment[i].UseId).ToList();
-                Recipe = _context.Recipes.Where(e => e.Id == comment[i].RecId).ToList();
             }
+                
             for (int i = 0; i < User.Count(); i++)
             {
                 User[i].Comments = null;
-            }
-
-            for (int i = 0; i < Recipe.Count; i++)
-            {
-                Recipe[i].Comments = null;
             }
 
             return comment;
