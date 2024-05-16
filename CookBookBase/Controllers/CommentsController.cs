@@ -32,27 +32,35 @@ namespace CookBookBase.Controllers
 
         // GET: api/Comments/5
         [HttpGet("api/GetComment/{id}")]
-        public async Task<ActionResult<Comment>> GetComment(int id)
+        public async Task<ActionResult<IEnumerable<Comment>>> GetComment(int RecId)
         {
-            var comment = await _context.Comments.FindAsync(id);
+            var comment = _context.Comments.Where(e => e.RecId == RecId).ToList();
             if (comment == null)
             {
                 return NotFound();
             }
 
-            if (comment.Id == comment.Firstcommentid)
+            var User = new List<User>();
+            var Recipe = new List<Recipe>();
+            for (int i = 0; i < comment.Count; i++)
             {
-                comment.Firstcomment = null;
-                comment.Firstcomment.Firstcomment = null;
-                comment.InverseFirstcomment = null;
+                if (comment[i].Id == comment[i].Firstcommentid)
+                {
+                    comment[i].Firstcomment = null;
+                    comment[i].Firstcomment.Firstcomment = null;
+                    comment[i].InverseFirstcomment = null;
+                }
+
+                User = _context.Users.Where(e => e.Id == comment[i].UseId).ToList();
+                Recipe = _context.Recipes.Where(e => e.Id == comment[i].RecId).ToList();
             }
-
-            var User = _context.Users.Where(e => e.Id == comment.UseId).ToList();
-            var Recipe = _context.Recipes.Where(e => e.Id == comment.RecId).ToList();
-
             for (int i = 0; i < User.Count(); i++)
             {
                 User[i].Comments = null;
+            }
+
+            for (int i = 0; i < Recipe.Count; i++)
+            {
                 Recipe[i].Comments = null;
             }
 
