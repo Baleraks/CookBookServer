@@ -41,7 +41,6 @@ namespace CookBookBase.Controllers
             }
 
             var User = new List<User>();
-            var Recipe = new List<Recipe>();
             for (int i = 0; i < comment.Count; i++)
             {
                 if (comment[i].Id == comment[i].Firstcommentid)
