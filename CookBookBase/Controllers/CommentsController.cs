@@ -43,6 +43,8 @@ namespace CookBookBase.Controllers
             if (comment.Id == comment.Firstcommentid)
             {
                 comment.Firstcomment = null;
+                comment.Firstcomment.Firstcomment = null;
+                comment.InverseFirstcomment = null;
             }
 
             var User = _context.Users.Where(e => e.Id == comment.UseId).ToList();

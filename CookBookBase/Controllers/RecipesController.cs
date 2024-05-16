@@ -73,12 +73,7 @@ namespace CookBookBase.Controllers
             var Tags = new List<Tag>();
             var Steps = _context.Steps.Where(e => e.RecId == id).ToList();
             var Likes = _context.Likes.Where(e => e.RecId == id).ToList();
-            var Comments = _context.Comments.Where(e => e.RecId == id).ToList();
-
-            for(int i = 0; i< Comments.Count();i++)
-            {
-                Comments[i].Rec = null; 
-            }
+           
 
             for (int i = 0; i < Likes.Count(); i++)
             {
