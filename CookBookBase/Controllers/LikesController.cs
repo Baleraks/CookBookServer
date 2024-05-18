@@ -98,9 +98,9 @@ namespace CookBookBase.Controllers
                 UseId = RedactedLike.UseId
             };
             var Recipe = _context.Recipes.Where(e => e.Id == like.RecId).FirstOrDefault();
-            if ( LikedRecipe != null)
+            if ( LikedRecipe == null)
             {
-                return NoContent();
+                return NotFound();
             }
             else if(UserLikes != null)
             {
@@ -108,7 +108,7 @@ namespace CookBookBase.Controllers
                 Recipe.Likes--;
                 _context.Entry(Recipe).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok(false);
             }
             else
             {
@@ -116,7 +116,7 @@ namespace CookBookBase.Controllers
                 Recipe.Likes++;
                 _context.Entry(Recipe).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok(true);
             }
         }
 
