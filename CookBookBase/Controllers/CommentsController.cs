@@ -32,9 +32,9 @@ namespace CookBookBase.Controllers
 
         // GET: api/Comments/5
         [HttpGet("api/GetComment/{id}")]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComment(int RecId)
+        public async Task<ActionResult<IEnumerable<Comment>>> GetComment(int id)
         {
-            var comment = _context.Comments.Where(e => e.RecId == RecId).ToList();
+            var comment = _context.Comments.Where(e => e.RecId == id).ToList();
             if (comment == null)
             {
                 return NotFound();
@@ -46,7 +46,7 @@ namespace CookBookBase.Controllers
                 if (comment[i].Id == comment[i].Firstcommentid)
                 {
                     comment[i].Firstcomment = null;
-                    comment[i].Firstcomment.Firstcomment = null;
+                    //comment[i].Firstcomment.Firstcomment = null;
                     comment[i].InverseFirstcomment = null;
                 }
 
