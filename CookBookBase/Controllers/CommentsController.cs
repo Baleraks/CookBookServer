@@ -40,7 +40,7 @@ namespace CookBookBase.Controllers
                 return NotFound();
             }
 
-            var User = new List<User>();
+            var User = new HashSet<User>();
             for (int i = 0; i < comment.Count; i++)
             {
                 if (comment[i].Id == comment[i].Firstcommentid)
@@ -50,12 +50,12 @@ namespace CookBookBase.Controllers
                     comment[i].InverseFirstcomment = null;
                 }
 
-                User = _context.Users.Where(e => e.Id == comment[i].UseId).ToList();
+                User.Add(_context.Users.Where(e => e.Id == comment[i].UseId).First());
             }
-                
-            for (int i = 0; i < User.Count(); i++)
+
+            foreach (var item in User)
             {
-                User[i].Comments = null;
+                item.Comments = null;
             }
 
             return comment;
@@ -123,7 +123,7 @@ namespace CookBookBase.Controllers
             }
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return NoContent();
         }
 
         // DELETE: api/Comments/5
