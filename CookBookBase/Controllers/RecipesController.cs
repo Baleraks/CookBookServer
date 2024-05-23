@@ -32,16 +32,17 @@ namespace CookBookBase.Controllers
         public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
         {
             var recipes = await _context.Recipes.ToListAsync();
-            if (query.Offset >= recipes.Count())
+            var sortedRecipes = recipes.OrderByDescending(e => e.Id).ToList();
+            if (query.Offset >= sortedRecipes.Count())
             {
                 return BadRequest("Offset is out of range");
             }
-            var RemainingCount = recipes.Count() - query.Offset;
+            var RemainingCount = sortedRecipes.Count() - query.Offset;
             if (query.Count > RemainingCount)
             {
                 query.Count = RemainingCount;
             }
-            var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
+            var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
             return Ok(RedactedRecipes);
         }
 
