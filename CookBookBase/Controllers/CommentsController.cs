@@ -32,7 +32,7 @@ namespace CookBookBase.Controllers
 
         // GET: api/Comments/5
         [HttpGet("api/GetComment/{id}")]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComment(int id)
+        public async Task<ActionResult<IEnumerable<RedactedComment>>> GetComment(int id)
         {
             var comment = _context.Comments.Where(e => e.RecId == id).ToList();
             if (comment == null)
@@ -40,25 +40,32 @@ namespace CookBookBase.Controllers
                 return NotFound();
             }
 
-            var User = new HashSet<User>();
+
             for (int i = 0; i < comment.Count; i++)
             {
                 if (comment[i].Id == comment[i].Firstcommentid)
                 {
                     comment[i].Firstcomment = null;
-                    //comment[i].Firstcomment.Firstcomment = null;
                     comment[i].InverseFirstcomment = null;
                 }
 
-                User.Add(_context.Users.Where(e => e.Id == comment[i].UseId).First());
+                _context.Users.Where(e => e.Id == comment[i].UseId).First();
             }
 
-            foreach (var item in User)
+            List<RedactedComment> result = new();
+
+            foreach (var item in comment)
             {
-                item.Comments = null;
+                var a = new RedactedComment();
+                a.Commenttext = item.Commenttext;
+                a.RecId = item.RecId;
+                a.UseId = item.UseId;
+                a.Firstcommentid = item.Firstcommentid;
+                a.UserNick = item.Use.Nick;
+                a.Id = item.Id;
+                result.Add(a);
             }
-
-            return comment;
+            return result;
         }
 
         // PUT: api/Comments/5
