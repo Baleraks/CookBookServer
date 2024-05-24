@@ -46,6 +46,56 @@ namespace CookBookBase.Controllers
             return Ok(RedactedRecipes);
         }
 
+        // POST: api/GetRecipesByLikes
+        [HttpPost]
+        [Route("api/GetRecipesByLikes")]
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByLikes([FromBody] PaginationQuery query)
+        {
+            var recipes = await _context.Recipes.ToListAsync();
+            var sortedRecipes = recipes.OrderByDescending(e => e.Likes).ToList();
+            if (query.Offset >= sortedRecipes.Count())
+            {
+                return BadRequest("Offset is out of range");
+            }
+            var RemainingCount = sortedRecipes.Count() - query.Offset;
+            if (query.Count > RemainingCount)
+            {
+                query.Count = RemainingCount;
+            }
+            var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
+            return Ok(RedactedRecipes);
+        }
+
+        // POST: api/GetRecipesByName
+        [HttpPost]
+        [Route("api/GetRecipesByName")]
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query, string recipeName)
+        {
+            var recipes = await _context.Recipes.Where((e => e.Recipename == recipeName)).ToListAsync();
+
+            if (query.Offset >= recipes.Count())
+            {
+                return BadRequest("Offset is out of range");
+            }
+            var RemainingCount = recipes.Count() - query.Offset;
+            if (query.Count > RemainingCount)
+            {
+                query.Count = RemainingCount;
+            }
+            var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
+            return Ok(RedactedRecipes);
+        }
+
+        // POST: api/GetRecipesByTags
+        [HttpPost]
+        [Route("api/GetRecipesByTags")]
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByTags([FromBody] List<string> tags)
+        {
+            var recipes = await _context.Recipes.Include(r => r.Recipetotags).ThenInclude(rt => rt.Tag).ToListAsync();
+            var filteredRecipes = recipes.Where(r => r.Recipetotags.Any(rt => tags.Contains(rt.Tag.Tagname))).ToList();
+            return Ok(filteredRecipes);
+        }
+
         // GET: api/Recipes/5
         [HttpGet("api/GetRecipe/{id}")]
         public async Task<ActionResult<Recipe>> GetRecipe(int id)
