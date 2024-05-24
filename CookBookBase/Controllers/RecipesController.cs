@@ -69,9 +69,9 @@ namespace CookBookBase.Controllers
         // POST: api/GetRecipesByName
         [HttpPost]
         [Route("api/GetRecipesByName")]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query, string recipeName)
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query)
         {
-            var recipes = await _context.Recipes.Where((e => e.Recipename == recipeName)).ToListAsync();
+            var recipes = await _context.Recipes.Where((e => e.Recipename.Contains(query.RecipeName))).ToListAsync();
 
             if (query.Offset >= recipes.Count())
             {
@@ -89,11 +89,30 @@ namespace CookBookBase.Controllers
         // POST: api/GetRecipesByTags
         [HttpPost]
         [Route("api/GetRecipesByTags")]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByTags([FromBody] List<string> tags)
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByTags(TagRedacted a)
         {
-            var recipes = await _context.Recipes.Include(r => r.Recipetotags).ThenInclude(rt => rt.Tag).ToListAsync();
-            var filteredRecipes = recipes.Where(r => r.Recipetotags.Any(rt => tags.Contains(rt.Tag.Tagname))).ToList();
-            return Ok(filteredRecipes);
+            List<Tag> tags = new();
+            foreach (var item in a.Tags)
+            {
+                tags.AddRange(_context.Tags.Where(x => x.Tagname == item));
+            }
+            List<Recipetotag> recipetotags = new();
+            foreach (var item in tags)
+            {
+                recipetotags.AddRange(_context.Recipetotags.Where(x=>x.TagId == item.Id));
+            }
+
+            List<Recipe> recipes = new();
+            foreach (var item in recipetotags)
+            {
+                recipes.AddRange(_context.Recipes.Where(x => x.Id == item.RecId));
+            }
+
+            foreach (var item in recipes)
+            {
+                item.Recipetotags = null;
+            }
+            return Ok(recipes);
         }
 
         // GET: api/Recipes/5
