@@ -27,24 +27,24 @@ namespace CookBookBase.Controllers
         }
 
         // GET: api/Recipes
-        [HttpPost]
-        [Route("api/GetRecipes")]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
-        {
-            var recipes = await _context.Recipes.ToListAsync();
-            var sortedRecipes = recipes.OrderByDescending(e => e.Id).ToList();
-            if (query.Offset >= sortedRecipes.Count())
-            {
-                return BadRequest("Offset is out of range");
-            }
-            var RemainingCount = sortedRecipes.Count() - query.Offset;
-            if (query.Count > RemainingCount)
-            {
-                query.Count = RemainingCount;
-            }
-            var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
-            return Ok(RedactedRecipes);
-        }
+        //[HttpPost]
+        //[Route("api/GetRecipes")]
+        //public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
+        //{
+        //    var recipes = await _context.Recipes.ToListAsync();
+        //    var sortedRecipes = recipes.OrderByDescending(e => e.Id).ToList();
+        //    if (query.Offset >= sortedRecipes.Count())
+        //    {
+        //        return BadRequest("Offset is out of range");
+        //    }
+        //    var RemainingCount = sortedRecipes.Count() - query.Offset;
+        //    if (query.Count > RemainingCount)
+        //    {
+        //        query.Count = RemainingCount;
+        //    }
+        //    var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
+        //    return Ok(RedactedRecipes);
+        //}
 
         // POST: api/GetRecipesByLikes
         [HttpPost]
@@ -67,11 +67,63 @@ namespace CookBookBase.Controllers
         }
 
         // POST: api/GetRecipesByName
+        //[HttpPost]
+        //[Route("api/GetRecipesByName")]
+        //public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query)
+        //{
+        //    var recipes = await _context.Recipes.Where((e => e.Recipename.Contains(query.RecipeName))).ToListAsync();
+
+        //    if (query.Offset >= recipes.Count())
+        //    {
+        //        return BadRequest("Offset is out of range");
+        //    }
+        //    var RemainingCount = recipes.Count() - query.Offset;
+        //    if (query.Count > RemainingCount)
+        //    {
+        //        query.Count = RemainingCount;
+        //    }
+        //    var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
+        //    return Ok(RedactedRecipes);
+        //}
+
+        // POST: api/GetRecipes
         [HttpPost]
-        [Route("api/GetRecipesByName")]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query)
+        [Route("api/GetRecipes")]
+        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByTags(PaginationQuery query)
         {
-            var recipes = await _context.Recipes.Where((e => e.Recipename.Contains(query.RecipeName))).ToListAsync();
+            List<Recipe> recipes = new();
+            recipes = await _context.Recipes.ToListAsync();
+            recipes = recipes.OrderByDescending(e => e.Id).ToList();
+
+            if (query != null && query.Tags.Any())
+            {
+                List<Tag> tags = new();
+                foreach (var item in query.Tags)
+                {
+                    tags.AddRange(_context.Tags.Where(x => x.Tagname == item));
+                }
+                List<Recipetotag> recipetotags = new();
+                foreach (var item in tags)
+                {
+                    recipetotags.AddRange(_context.Recipetotags.Where(x => x.TagId == item.Id));
+                }
+
+                
+                foreach (var item in recipetotags)
+                {
+                    recipes.AddRange(_context.Recipes.Where(x => x.Id == item.RecId));
+                }
+
+                foreach (var item in recipes)
+                {
+                    item.Recipetotags = null;
+                }
+            }
+
+            if(!string.IsNullOrEmpty(query.RecipeName))
+            {
+                recipes = recipes.Where((e => e.Recipename.Contains(query.RecipeName))).ToList();
+            }
 
             if (query.Offset >= recipes.Count())
             {
@@ -83,36 +135,8 @@ namespace CookBookBase.Controllers
                 query.Count = RemainingCount;
             }
             var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
+
             return Ok(RedactedRecipes);
-        }
-
-        // POST: api/GetRecipesByTags
-        [HttpPost]
-        [Route("api/GetRecipesByTags")]
-        public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByTags(TagRedacted a)
-        {
-            List<Tag> tags = new();
-            foreach (var item in a.Tags)
-            {
-                tags.AddRange(_context.Tags.Where(x => x.Tagname == item));
-            }
-            List<Recipetotag> recipetotags = new();
-            foreach (var item in tags)
-            {
-                recipetotags.AddRange(_context.Recipetotags.Where(x=>x.TagId == item.Id));
-            }
-
-            List<Recipe> recipes = new();
-            foreach (var item in recipetotags)
-            {
-                recipes.AddRange(_context.Recipes.Where(x => x.Id == item.RecId));
-            }
-
-            foreach (var item in recipes)
-            {
-                item.Recipetotags = null;
-            }
-            return Ok(recipes);
         }
 
         // GET: api/Recipes/5
