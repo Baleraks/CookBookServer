@@ -108,10 +108,29 @@ namespace CookBookBase.Controllers
                     recipetotags.AddRange(_context.Recipetotags.Where(x => x.TagId == item.Id));
                 }
 
-                
-                foreach (var item in recipetotags)
+                recipes.Clear();
+                var a = new List<Recipetotag>();
+                for (int i = 0; i < recipetotags.Count; i++)
                 {
-                    recipes.AddRange(_context.Recipes.Where(x => x.Id == item.RecId));
+                    int count = 1;
+                    for (int j = i + 1; j < recipetotags.Count; j++)
+                    {
+                        if (recipetotags[i].RecId == recipetotags[j].RecId
+                            && recipetotags[i].TagId != recipetotags[j].TagId)
+                        {
+                            count++;
+                        }
+                    }
+
+                    if (count == query.Tags.Count)
+                    {
+                        a.Add(recipetotags[i]);
+                    }
+                }
+
+                foreach (var item in a)
+                {
+                    recipes.Add(item.Rec);
                 }
 
                 foreach (var item in recipes)
