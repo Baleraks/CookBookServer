@@ -50,6 +50,10 @@ namespace CookBookBase.Controllers
             var Likes = _context.Likes.Where(e => e.UseId == user.Id).ToList();
             var Recipes = _context.Recipes.Where(e => e.UseId == user.Id).ToList();
             var Comments = _context.Comments.Where(e => e.UseId == user.Id).GroupBy(e => e.RecId).Select(e => e.First()).ToList();
+            foreach (var comment in Comments)
+            {
+                var a = _context.Recipes.Find(comment.RecId);
+            }
 
             for(int i = 0; i< Comments.Count(); i++)
             {
@@ -59,7 +63,8 @@ namespace CookBookBase.Controllers
                     Comments[i].InverseFirstcomment = null;
                 }
                 Comments[i].Use = null;
-                Comments[i].Rec.Comments = null;
+                if (Comments[i].Rec!=null)
+                    Comments[i].Rec.Comments = null;
             }
 
             for (int i = 0; i < Likes.Count(); i++)
