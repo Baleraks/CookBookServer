@@ -543,7 +543,7 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Recipes/5
-        //[Authorize]
+        [Authorize]
         [HttpDelete("api/DeleteRecipe")]
         public async Task<IActionResult> DeleteRecipe(DeleteModel model)
         {

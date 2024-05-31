@@ -74,6 +74,7 @@ namespace CookBookBase.Controllers
             for (int i = 0; i < Recipes.Count; i++)
             {
                 Recipes[i].Use = null;
+                Recipes[i].Comments = null;
             }
 
             var NewUser = new RedactedUser()
