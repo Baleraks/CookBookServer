@@ -583,24 +583,24 @@ namespace CookBookBase.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                var Qauntities = new List<Qauntity>();
-                for (int i = 0; i < IngridientsToQauntities.Count; i++)
-                {
-                    Qauntities.AddRange(_context.Qauntitys.Where(e => e.Id == IngridientsToQauntities[i].QauId).ToList());
-                }
-                for (int i = 0; i < Qauntities.Count; i++)
-                {
-                    _context.Qauntitys.Remove(Qauntities[i]);
-                }
+                //var Qauntities = new List<Qauntity>();
+                //for (int i = 0; i < IngridientsToQauntities.Count; i++)
+                //{
+                //    Qauntities.AddRange(_context.Qauntitys.Where(e => e.Id == IngridientsToQauntities[i].QauId).ToList());
+                //}
+                //for (int i = 0; i < Qauntities.Count; i++)
+                //{
+                //    _context.Qauntitys.Remove(Qauntities[i]);
+                //}
 
-                for (int i = 0; i < RecipeToQauntities.Count; i++)
-                {
-                    IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
-                }
-                for (int i = 0; i < IngridientsToQauntities.Count; i++)
-                {
-                    _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
-                }
+                //for (int i = 0; i < RecipeToQauntities.Count; i++)
+                //{
+                //    IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
+                //}
+                //for (int i = 0; i < IngridientsToQauntities.Count; i++)
+                //{
+                //    _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
+                //}
                 await _context.SaveChangesAsync();
 
                 var Steps = _context.Steps.Where(e => e.RecId == model.Id).ToList();
