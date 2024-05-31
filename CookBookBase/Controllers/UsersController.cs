@@ -49,6 +49,17 @@ namespace CookBookBase.Controllers
 
             var Likes = _context.Likes.Where(e => e.UseId == user.Id).ToList();
             var Recipes = _context.Recipes.Where(e => e.UseId == user.Id).ToList();
+            var Comments = _context.Comments.Where(e => e.UseId == user.Id).ToList();
+
+            for(int i = 0; i< Comments.Count(); i++)
+            {
+                if (Comments[i].Id == Comments[i].Firstcommentid)
+                {
+                    Comments[i].Firstcomment = null;
+                    Comments[i].InverseFirstcomment = null;
+                }
+                Comments[i].Use = null;
+            }
 
             for (int i = 0; i < Likes.Count(); i++)
             {
@@ -69,7 +80,7 @@ namespace CookBookBase.Controllers
             {
                 Id = user.Id,
                 Nick = user.Nick,
-                Comments= user.Comments,
+                Comments= Comments,
                 Likes = Likes,
                 Recipes = Recipes,
                 Reports = user.Reports

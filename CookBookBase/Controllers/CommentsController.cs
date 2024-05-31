@@ -134,19 +134,29 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Comments/5
-        [HttpDelete("api/DeleteComment/{id}")]
-        public async Task<IActionResult> DeleteComment(int id)
+        [HttpDelete("api/DeleteComment")]
+        public async Task<IActionResult> DeleteComment(DeleteModel model)
         {
-            var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
+            var commentId = model.Id;
+            var userId = model.UserId;
+            var comment = await _context.Comments.FindAsync(commentId);
+            var User = _context.Users.Find(userId);
+            if (comment == null || User == null)
             {
                 return NotFound();
             }
 
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
+            if (model.UserId == comment.UseId || User.Isadmin == true)
+            {
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
 
-            return NoContent();
+                return NoContent();
+            }
+            else
+            {
+                return BadRequest("Permission denied");
+            }
         }
 
         private bool CommentExists(int id)
