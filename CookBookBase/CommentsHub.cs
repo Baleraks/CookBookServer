@@ -16,9 +16,16 @@ public class CommentsHub : Hub
         _context = context;
     }
 
-    public async Task<IEnumerable<Comment>> GetComments()
+    public override async Task OnConnectedAsync()
     {
-        return await _context.Comments.ToListAsync();
+        Console.WriteLine($"Client connected: {Context.ConnectionId}");
+        await base.OnConnectedAsync();
+    }
+
+    public async Task GetComments()
+    {
+        var comments = _context.Comments.ToListAsync();
+        await Clients.Caller.SendAsync("ReceiveComments", comments);    
     }
 
     public async Task<IEnumerable<RedactedComment>> GetComment(int id)
