@@ -134,6 +134,7 @@ namespace CookBookBase.Controllers
         }
 
         // DELETE: api/Comments/5
+        [Authorize]
         [HttpDelete("api/DeleteComment")]
         public async Task<IActionResult> DeleteComment(DeleteModel model)
         {
