@@ -107,7 +107,7 @@ namespace CookBookBase.Controllers
                 Recipe.Reportsnum --;
                 _context.Entry(Recipe).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok(false);
             }
             else
             {
@@ -115,7 +115,7 @@ namespace CookBookBase.Controllers
                 Recipe.Reportsnum++;
                 _context.Entry(Recipe).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok(true);
             }
         }
 
