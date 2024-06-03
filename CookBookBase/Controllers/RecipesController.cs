@@ -153,8 +153,8 @@ namespace CookBookBase.Controllers
             {
                 query.Count = RemainingCount;
             }
-            var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
-            RedactedRecipes = RedactedRecipes.OrderByDescending(e => e.Id).ToList();
+            var RedactedRecipes = recipes.OrderByDescending(e => e.Id).ToList();
+            RedactedRecipes = RedactedRecipes.Skip(query.Offset).Take(query.Count).ToList();
 
             return Ok(RedactedRecipes);
         }
@@ -225,9 +225,8 @@ namespace CookBookBase.Controllers
             {
                 query.Count = RemainingCount;
             }
-            var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
-            RedactedRecipes = RedactedRecipes.OrderByDescending(e => e.Likes).ToList();
-
+            var RedactedRecipes = recipes.OrderByDescending(e => e.Likes).ToList();
+            RedactedRecipes = RedactedRecipes.Skip(query.Offset).Take(query.Count).ToList();
             return Ok(RedactedRecipes);
         }
 
