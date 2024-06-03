@@ -538,7 +538,7 @@ namespace CookBookBase.Controllers
                 _context.Recipetoqauntities.Add(RecipeToQauntities);
             }
             await _context.SaveChangesAsync();
-            return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe);
+            return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe.Id);
         }
 
         // DELETE: api/Recipes/5
