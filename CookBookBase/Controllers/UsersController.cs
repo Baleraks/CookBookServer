@@ -165,6 +165,37 @@ namespace CookBookBase.Controllers
             return NoContent();
         }
 
+        [HttpPost("api/getBannedRecipes")]
+        public IActionResult GetRecipeNames([FromBody] int userId)
+        {
+            string logFilePath = "wwwroot\\Ban.txt";
+
+            if (!System.IO.File.Exists(logFilePath))
+            {
+                return NotFound("Log file not found");
+            }
+            List<string> recipeNames = new List<string>();
+            using (StreamReader reader = new StreamReader(logFilePath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.StartsWith($"{userId}/"))
+                    {
+                        string recipeName = line.Substring($"{userId}/".Length);
+                        recipeNames.Add(recipeName);
+                    }
+                }
+            }
+
+            if (recipeNames.Count == 0)
+            {
+                return NotFound("No recipes found for the specified user");
+            }
+            string response = string.Join(", ", recipeNames);
+            return Ok(response);
+        }
+
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
