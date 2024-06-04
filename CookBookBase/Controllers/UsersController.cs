@@ -165,8 +165,8 @@ namespace CookBookBase.Controllers
             return NoContent();
         }
 
-        [HttpPost("api/getBannedRecipes")]
-        public IActionResult GetRecipeNames([FromBody] int userId)
+        [HttpGet("api/getBannedRecipes/{userId}")]
+        public IActionResult GetRecipeNames( int userId)
         {
             string logFilePath = "wwwroot\\Ban.txt";
 
