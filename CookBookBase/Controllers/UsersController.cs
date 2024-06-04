@@ -170,29 +170,36 @@ namespace CookBookBase.Controllers
         {
             string logFilePath = "wwwroot\\Ban.txt";
 
+            // Проверяем, существует ли файл
             if (!System.IO.File.Exists(logFilePath))
             {
                 return NotFound("Log file not found");
             }
+
+            List<string> lines = System.IO.File.ReadAllLines(logFilePath).ToList();
+
             List<string> recipeNames = new List<string>();
-            using (StreamReader reader = new StreamReader(logFilePath))
+            List<string> linesToRemove = new List<string>();
+            foreach (string line in lines)
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                if (line.StartsWith($"{userId}/"))
                 {
-                    if (line.StartsWith($"{userId}/"))
-                    {
-                        string recipeName = line.Substring($"{userId}/".Length);
-                        recipeNames.Add(recipeName);
-                    }
+                    string recipeName = line.Substring($"{userId}/".Length);
+                    recipeNames.Add(recipeName);
+                    linesToRemove.Add(line);
                 }
             }
-
             if (recipeNames.Count == 0)
             {
                 return NotFound("No recipes found for the specified user");
             }
+
             string response = string.Join(", ", recipeNames);
+            foreach (string lineToRemove in linesToRemove)
+            {
+                lines.Remove(lineToRemove);
+            }
+            System.IO.File.WriteAllLines(logFilePath, lines);
             return Ok(response);
         }
 
