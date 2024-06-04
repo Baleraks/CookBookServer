@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using CookBookBase.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CookBookBase;
-using CookBookBase.Models;
-using Microsoft.AspNetCore.Authorization;
-using System.IO;
-using NuGet.Packaging;
 
 namespace CookBookBase.Controllers
 {
-  
+
     [ApiController]
     public class RecipesController : ControllerBase
     {
@@ -26,65 +18,7 @@ namespace CookBookBase.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/Recipes
-        //[HttpPost]
-        //[Route("api/GetRecipes")]
-        //public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipes([FromBody] PaginationQuery query)
-        //{
-        //    var recipes = await _context.Recipes.ToListAsync();
-        //    var sortedRecipes = recipes.OrderByDescending(e => e.Id).ToList();
-        //    if (query.Offset >= sortedRecipes.Count())
-        //    {
-        //        return BadRequest("Offset is out of range");
-        //    }
-        //    var RemainingCount = sortedRecipes.Count() - query.Offset;
-        //    if (query.Count > RemainingCount)
-        //    {
-        //        query.Count = RemainingCount;
-        //    }
-        //    var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
-        //    return Ok(RedactedRecipes);
-        //}
-
-        // POST: api/GetRecipesByLikes
-        //[HttpPost]
-        //[Route("api/GetRecipesByLikes")]
-        //public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByLikes([FromBody] PaginationQuery query)
-        //{
-        //    var recipes = await _context.Recipes.ToListAsync();
-        //    var sortedRecipes = recipes.OrderByDescending(e => e.Likes).ToList();
-        //    if (query.Offset >= sortedRecipes.Count())
-        //    {
-        //        return BadRequest("Offset is out of range");
-        //    }
-        //    var RemainingCount = sortedRecipes.Count() - query.Offset;
-        //    if (query.Count > RemainingCount)
-        //    {
-        //        query.Count = RemainingCount;
-        //    }
-        //    var RedactedRecipes = sortedRecipes.Skip(query.Offset).Take(query.Count);
-        //    return Ok(RedactedRecipes);
-        //}
-
-        // POST: api/GetRecipesByName
-        //[HttpPost]
-        //[Route("api/GetRecipesByName")]
-        //public async Task<ActionResult<IEnumerable<Recipe>>> GetRecipesByName([FromBody] PaginationQuery query)
-        //{
-        //    var recipes = await _context.Recipes.Where((e => e.Recipename.Contains(query.RecipeName))).ToListAsync();
-
-        //    if (query.Offset >= recipes.Count())
-        //    {
-        //        return BadRequest("Offset is out of range");
-        //    }
-        //    var RemainingCount = recipes.Count() - query.Offset;
-        //    if (query.Count > RemainingCount)
-        //    {
-        //        query.Count = RemainingCount;
-        //    }
-        //    var RedactedRecipes = recipes.Skip(query.Offset).Take(query.Count);
-        //    return Ok(RedactedRecipes);
-        //}
+        
 
         // POST: api/GetRecipes
         [HttpPost]
@@ -556,6 +490,13 @@ namespace CookBookBase.Controllers
             }
             if (model.UserId == recipe.UseId || User.Isadmin == true)
             {
+                if (User.Isadmin == true)
+                {
+                    using (StreamWriter writer = new StreamWriter("wwwroot\\Ban.txt", true))
+                    {
+                        writer.WriteLine($"{recipe.UseId}/{recipe.Recipename}");
+                    }
+                }
                 var RecipeToIngridients = _context.Recipetoingridients.Where(e => e.RecId == model.Id).ToList();
                 var RecipeToQauntities = new List<Recipetoqauntity>();
                 var IngridientsToQauntities = new List<Ingridienttoqauntity>();
@@ -582,24 +523,6 @@ namespace CookBookBase.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                //var Qauntities = new List<Qauntity>();
-                //for (int i = 0; i < IngridientsToQauntities.Count; i++)
-                //{
-                //    Qauntities.AddRange(_context.Qauntitys.Where(e => e.Id == IngridientsToQauntities[i].QauId).ToList());
-                //}
-                //for (int i = 0; i < Qauntities.Count; i++)
-                //{
-                //    _context.Qauntitys.Remove(Qauntities[i]);
-                //}
-
-                //for (int i = 0; i < RecipeToQauntities.Count; i++)
-                //{
-                //    IngridientsToQauntities.AddRange(_context.Ingridienttoqauntities.Where(e => e.IngId == RecipeToIngridients[i].IngId).ToList());
-                //}
-                //for (int i = 0; i < IngridientsToQauntities.Count; i++)
-                //{
-                //    _context.Ingridienttoqauntities.Remove(IngridientsToQauntities[i]);
-                //}
                 await _context.SaveChangesAsync();
 
                 var Steps = _context.Steps.Where(e => e.RecId == model.Id).ToList();
