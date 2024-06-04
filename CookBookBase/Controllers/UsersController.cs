@@ -10,6 +10,7 @@ using CookBookBase.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Security.Policy;
+using static CookBookBase.Controllers.UsersController;
 
 
 
@@ -169,43 +170,52 @@ namespace CookBookBase.Controllers
         public IActionResult GetRecipeNames( int userId)
         {
             string logFilePath = "wwwroot\\Ban.txt";
-
-            // Проверяем, существует ли файл
             if (!System.IO.File.Exists(logFilePath))
             {
                 return NotFound("Log file not found");
             }
-
             List<string> lines = System.IO.File.ReadAllLines(logFilePath).ToList();
-
-            List<string> recipeNames = new List<string>();
+            List<RecipeInfo> recipeInfos = new List<RecipeInfo>();
             List<string> linesToRemove = new List<string>();
             foreach (string line in lines)
             {
                 if (line.StartsWith($"{userId}/"))
                 {
-                    string recipeName = line.Substring($"{userId}/".Length);
-                    recipeNames.Add(recipeName);
-                    linesToRemove.Add(line);
+                    string trimmedLine = line.Substring($"{userId}/".Length);
+                    string[] parts = trimmedLine.Split('/');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int id))
+                    {
+                        recipeInfos.Add(new RecipeInfo
+                        {
+                            RecipeName = parts[0],
+                            Id = id
+                        });
+                        linesToRemove.Add(line);
+                    }
                 }
             }
-            if (recipeNames.Count == 0)
+            if (recipeInfos.Count == 0)
             {
                 return NotFound("No recipes found for the specified user");
             }
-
-            string response = string.Join(", ", recipeNames);
             foreach (string lineToRemove in linesToRemove)
             {
                 lines.Remove(lineToRemove);
             }
             System.IO.File.WriteAllLines(logFilePath, lines);
-            return Ok(response);
+            return Ok(recipeInfos);
         }
 
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
         }
+
+        public class RecipeInfo
+        {
+            public string RecipeName { get; set; }
+            public int Id { get; set; }
+        }
     }
+
 }

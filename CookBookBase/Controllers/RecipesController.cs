@@ -494,7 +494,7 @@ namespace CookBookBase.Controllers
                 {
                     using (StreamWriter writer = new StreamWriter("wwwroot\\Ban.txt", true))
                     {
-                        writer.WriteLine($"{recipe.UseId}/{recipe.Recipename}");
+                        writer.WriteLine($"{recipe.UseId}/{recipe.Recipename}/{recipe.Id}");
                     }
                 }
                 var RecipeToIngridients = _context.Recipetoingridients.Where(e => e.RecId == model.Id).ToList();
