@@ -97,7 +97,7 @@ namespace CookBookBase.Controllers
                 UseId = RedactedReport.UseId
             };
             var Recipe = _context.Recipes.Where(e => e.Id == report.RecId).FirstOrDefault();
-            if (ReportedRecipe != null)
+            if (ReportedRecipe == null)
             {
                 return NoContent();
             }
