@@ -1,4 +1,4 @@
-﻿namespace CookBookBase.Models
+﻿namespace CookBookBase.Helpers.DataHelpers
 {
     public class RedactedComment
     {
@@ -12,6 +12,6 @@
 
         public int? Firstcommentid { get; set; }
 
-        public string? UserNick {  get; set; }
+        public string? UserNick { get; set; }
     }
 }

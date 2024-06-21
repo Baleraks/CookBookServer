@@ -1,6 +1,6 @@
-﻿namespace CookBookBase.Controllers
+﻿namespace CookBookBase.Helpers
 {
-    public record DecodedToken( string KeyId,
+    public record DecodedToken(string KeyId,
         string Issuer,
         List<string> Audience,
         List<(string Type, string value)> Claims,

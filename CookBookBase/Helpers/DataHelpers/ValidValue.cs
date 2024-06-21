@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 
-namespace CookBookBase.Models
+namespace CookBookBase.Helpers.DataHelpers
 {
-    public class ValidValue <T>
+    public class ValidValue<T>
     {
         public bool isSuccess;
         public T value;

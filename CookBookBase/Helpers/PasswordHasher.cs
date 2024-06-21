@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace CookBookBase.Controllers
+namespace CookBookBase.Helpers
 {
     public class PasswordHasher
     {
@@ -19,7 +19,7 @@ namespace CookBookBase.Controllers
             return string.Join(Delimiter, Convert.ToBase64String(salt), Convert.ToBase64String(hash));
         }
 
-        public bool VerifyPassword(string passwordHash, string inputPassword) 
+        public bool VerifyPassword(string passwordHash, string inputPassword)
         {
             var elements = passwordHash.Split(Delimiter);
             var salt = Convert.FromBase64String(elements[0]);

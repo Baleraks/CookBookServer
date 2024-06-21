@@ -1,4 +1,6 @@
-﻿namespace CookBookBase.Models
+﻿using CookBookBase.Models;
+
+namespace CookBookBase.Helpers.DataHelpers
 {
     public class RedactedUser
     {

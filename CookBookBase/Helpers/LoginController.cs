@@ -1,5 +1,5 @@
 ﻿using CookBookBase;
-using CookBookBase.Controllers;
+using CookBookBase.Helpers.DataHelpers;
 using CookBookBase.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography.Xml;
 using System.Text;
 
-namespace AuthenticationAndAuthorization.Controllers
+namespace CookBookBase.Helpers
 {
 
     [ApiController]
@@ -35,14 +35,14 @@ namespace AuthenticationAndAuthorization.Controllers
         {
             if (_userData != null)
             {
-                var resultLoginCheck = _context.Users   
+                var resultLoginCheck = _context.Users
                     .Where(e => e.Nick == _userData.Nick)
                     .FirstOrDefault();
                 if (resultLoginCheck == null)
                 {
                     return BadRequest("User not found");
                 }
-               var result = passwordHasher.VerifyPassword(resultLoginCheck.Hashpassword, _userData.Hashpassword);
+                var result = passwordHasher.VerifyPassword(resultLoginCheck.Hashpassword, _userData.Hashpassword);
                 if (!result)
                 {
                     return BadRequest("Password is incorrect");
@@ -69,10 +69,10 @@ namespace AuthenticationAndAuthorization.Controllers
                     var ActiveToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
 
-                    var response = new TokenResponse() { jwttoken = ActiveToken, refreshtoken = GenerateRefreshToken(_userData.Nick), Id = resultLoginCheck.Id};
+                    var response = new TokenResponse() { jwttoken = ActiveToken, refreshtoken = GenerateRefreshToken(_userData.Nick), Id = resultLoginCheck.Id };
 
                     return Ok(response);
-                   
+
                 }
             }
             else
@@ -108,8 +108,8 @@ namespace AuthenticationAndAuthorization.Controllers
 
         [HttpPost("api/RefreshToken")]
         public IActionResult RefToken([FromBody] TokenResponse tokenResponse)
-        { 
-           var UserName = RefreshToken(tokenResponse);
+        {
+            var UserName = RefreshToken(tokenResponse);
             if (!UserName.isSuccess)
             {
                 return BadRequest(UserName.exeption);
@@ -117,7 +117,7 @@ namespace AuthenticationAndAuthorization.Controllers
             var AccessToken = GenerateToken(UserName.value);
             var RefToken = GenerateRefreshToken(UserName.value);
 
-            var response = new TokenResponse() { jwttoken = AccessToken, refreshtoken = RefToken};
+            var response = new TokenResponse() { jwttoken = AccessToken, refreshtoken = RefToken };
 
             return Ok(response);
         }
@@ -126,11 +126,11 @@ namespace AuthenticationAndAuthorization.Controllers
         {
             var keyId = token.Header.Kid;
             var audience = token.Audiences.ToList();
-            
-            var claims = token.Claims.Select(claim=>(claim.Type,claim.Value)).ToList();
+
+            var claims = token.Claims.Select(claim => (claim.Type, claim.Value)).ToList();
 
             return new DecodedToken(
-            keyId, token.Issuer, audience, claims, token.ValidTo, token.SignatureAlgorithm,token.RawData,token.Subject,token.ValidFrom,token.EncodedHeader,token.EncodedPayload)
+            keyId, token.Issuer, audience, claims, token.ValidTo, token.SignatureAlgorithm, token.RawData, token.Subject, token.ValidFrom, token.EncodedHeader, token.EncodedPayload)
             ;
         }
 
@@ -169,7 +169,7 @@ namespace AuthenticationAndAuthorization.Controllers
             try
             {
                 var principal = tokenHandler.ValidateToken(token,
-                    new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    new TokenValidationParameters
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
@@ -186,7 +186,7 @@ namespace AuthenticationAndAuthorization.Controllers
                 result.value = principal;
                 result.isSuccess = true;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 result.exeption = ex.Message;
                 result.isSuccess = false;
@@ -203,7 +203,7 @@ namespace AuthenticationAndAuthorization.Controllers
             try
             {
                 var principal = tokenHandler.ValidateToken(token,
-                    new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    new TokenValidationParameters
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
@@ -234,7 +234,7 @@ namespace AuthenticationAndAuthorization.Controllers
             var result = new ValidValue<string>();
             var AccessPrincipal = GetPrincipal(response.jwttoken);
             var RefreshPrincipal = GetRefreshPrincipal(response.refreshtoken);
-            if( AccessPrincipal.isSuccess) 
+            if (AccessPrincipal.isSuccess)
             {
                 var RefreshUserName = RefreshPrincipal.value.Claims.First().Value;
                 var AccessUserName = AccessPrincipal.value.Claims.First().Value;
@@ -248,15 +248,15 @@ namespace AuthenticationAndAuthorization.Controllers
                     result.value = AccessUserName;
                     result.isSuccess = true;
                 }
-               
+
             }
             else
             {
                 result.exeption = "Tokens are not valid";
                 result.isSuccess = false;
             }
-         
-             return result;
+
+            return result;
         }
 
     }

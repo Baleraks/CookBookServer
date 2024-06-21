@@ -1,4 +1,4 @@
-﻿namespace CookBookBase.Models
+﻿namespace CookBookBase.Helpers.DataHelpers
 {
     public class RedactedLikes
     {

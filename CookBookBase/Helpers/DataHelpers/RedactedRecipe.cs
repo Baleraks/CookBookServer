@@ -1,4 +1,4 @@
-﻿namespace CookBookBase.Models
+﻿namespace CookBookBase.Helpers.DataHelpers
 {
     public class RedactedRecipe
     {
@@ -11,7 +11,7 @@
         public string[] Tags { get; set; } = null!;
         public double[] IngridientCalories { get; set; } = null!;
         public string[] Ingridients { get; set; } = null!;
-        public string[] Qauntities { get; set; } = null!;   
+        public string[] Qauntities { get; set; } = null!;
 
     }
 }
